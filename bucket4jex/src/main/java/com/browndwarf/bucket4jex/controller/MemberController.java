@@ -34,6 +34,7 @@ public class MemberController {
 
 	// private Bucket bucket;
 	
+	
 
 	
 	@GetMapping("/idlist/name/{name}")
