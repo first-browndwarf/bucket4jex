@@ -1,9 +1,12 @@
 package com.browndwarf.bucket4jex.controller;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,7 +15,6 @@ import com.browndwarf.bucket4jex.service.MemberService;
 
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
-import io.github.bucket4j.Bucket4j;
 import io.github.bucket4j.Refill;
 import io.github.bucket4j.local.LocalBucketBuilder;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MemberController {
 	
-	private static final int MAX_BANDWIDTH = 20;
+	private static final int MAX_BANDWIDTH = 10;
 	
 	private static final int TOKEN_REFILL_INTERVAL_SECONDS = 20;
 	private static final int TOKEN_REFILL_COUNT_AT_ONCE = 1;
@@ -29,17 +31,37 @@ public class MemberController {
 	private static final int TOKEN_REFILL_DURATION_MINUTES = 1;
 	private static final int TOKEN_REFILL_COUNT = 5;
 	
+	private static final int TOKEN_CONSUME_COUNT = 1;
+	
 	@Autowired
 	private MemberService	memberService;
 
-	// private Bucket bucket;
+	private Bucket	simpleBucket;
+	private Bucket	complexGreedyRefillBucket;
+	private Bucket	complexIntervalRefillBucket;
+	
+	public MemberController() {
+		simpleBucket = generateSimpleBucket();
+		// complexGreedyRefillBucket = generateComplexBucket(Arrays.asList(getClassicBandwidth(getGreedyRefill())));
+		// complexIntervalRefillBucket = 
+	}
 	
 	
+	@GetMapping("/member/count")
+	public	ResponseEntity<Integer>	getTotalMemberCount() {
+		
+		if (simpleBucket.tryConsume(TOKEN_CONSUME_COUNT)) {
+			log.info(">>> Remain bucket Count : {}", simpleBucket.getAvailableTokens()); 
+			return	ResponseEntity.ok(memberService.getAllFriendsCount());
+		}
+		
+		log.warn(">>> Exhausted Limit in Simple Bucket");
 
+		return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
+	}
 	
 	@GetMapping("/idlist/name/{name}")
 	public List<String> SearchMemberIDListByName(@PathVariable("name") String name) {
-		
 		return memberService.getFriendIDListByName(name);
 	}
 	

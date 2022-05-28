@@ -9,9 +9,13 @@ import javax.annotation.PostConstruct;
 
 import org.springframework.stereotype.Service;
 
+import com.browndwarf.bucket4jex.controller.MemberController;
 import com.browndwarf.bucket4jex.model.MemberDto;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class MemberService {
 
 	private	List<MemberDto> memberData;
@@ -35,6 +39,8 @@ public class MemberService {
 	
 	public List<String> getFriendIDListByName(String name) {
 		
+		log.info(">>> Enter getFriendIDListByName({})", name);
+		
 		return memberData.stream()
 			.filter(member->member.getMemberName().toLowerCase().contains(name.toLowerCase()))
 			.map(member->member.getMemberId())
@@ -43,12 +49,17 @@ public class MemberService {
 	
 	public List<String> getAllFriendsName() {
 		
+		log.info(">>> Enter getAllFriendsName()");
+		
 		return memberData.stream()
 			.map(MemberDto::getMemberName)
 			.collect(Collectors.toList());
 	}
 	
 	public int getAllFriendsCount() {
+		
+		log.info(">>> Enter getAllFriendsCount()");
+		
 		return memberData.size();
 	}
 
