@@ -37,14 +37,23 @@ public class MemberService {
 	}
 	
 	
-	public List<String> getFriendIDListByName(String name) {
+	public List<MemberDto> getFriendInfoListByName(String name) {
 		
-		log.info(">>> Enter getFriendIDListByName({})", name);
+		log.info(">>> Enter getFriendInfoListByName({})", name);
 		
 		return memberData.stream()
-			.filter(member->member.getMemberName().toLowerCase().contains(name.toLowerCase()))
-			.map(member->member.getMemberId())
+			.filter(member->member.getMemberName().equalsIgnoreCase(name))
 			.collect(Collectors.toList());
+	}
+	
+	public MemberDto getFriendInfoById(String id) {
+		
+		log.info(">>> Enter getFriendInfoById({})", id);
+		
+		return memberData.stream()
+			.filter(member->member.getMemberId().equals(id))
+			.findFirst()
+			.orElse(null);
 	}
 	
 	public List<String> getAllFriendsName() {
