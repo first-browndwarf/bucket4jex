@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.browndwarf.bucket4jex.model.MemberDto;
 import com.browndwarf.bucket4jex.service.MemberService;
 
 import io.github.bucket4j.Bandwidth;
@@ -26,7 +27,7 @@ public class MemberController {
 	private static final int MAX_BANDWIDTH = 10;
 	
 	private static final int TOKEN_REFILL_INTERVAL_SECONDS = 20;
-	private static final int TOKEN_REFILL_COUNT_AT_ONCE = 1;
+	private static final int TOKEN_REFILL_COUNT_AT_ONCE = 3;
 	
 	private static final int TOKEN_REFILL_DURATION_MINUTES = 1;
 	private static final int TOKEN_REFILL_COUNT = 5;
@@ -42,8 +43,8 @@ public class MemberController {
 	
 	public MemberController() {
 		simpleBucket = generateSimpleBucket();
-		// complexGreedyRefillBucket = generateComplexBucket(Arrays.asList(getClassicBandwidth(getGreedyRefill())));
-		// complexIntervalRefillBucket = 
+		complexGreedyRefillBucket = generateComplexBucket(Arrays.asList(getClassicBandwidth(getGreedyRefill())));
+		complexIntervalRefillBucket = generateComplexBucket(Arrays.asList(getClassicBandwidth(getIntervalRefill()))); 
 	}
 	
 	
@@ -60,9 +61,23 @@ public class MemberController {
 		return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
 	}
 	
-	@GetMapping("/idlist/name/{name}")
-	public List<String> SearchMemberIDListByName(@PathVariable("name") String name) {
-		return memberService.getFriendIDListByName(name);
+	@GetMapping("/member/name/{name}")
+	public ResponseEntity<List<MemberDto>> getMemberListByName(@PathVariable("name") String name) {
+		
+		if (complexGreedyRefillBucket.tryConsume(TOKEN_CONSUME_COUNT)) {
+			log.info(">>> Remain bucket Count : {}", complexGreedyRefillBucket.getAvailableTokens()); 
+			return	ResponseEntity.ok(memberService.getFriendInfoListByName(name));			
+		}
+		return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
+	}
+	
+	@GetMapping("/member/id/{id}")
+	public ResponseEntity<MemberDto> getMemberById(@PathVariable("id") String id) {
+		if (complexIntervalRefillBucket.tryConsume(TOKEN_CONSUME_COUNT)) {
+			log.info(">>> Remain bucket Count : {}", complexIntervalRefillBucket.getAvailableTokens()); 
+			return	ResponseEntity.ok(memberService.getFriendInfoById(id));			
+		}
+		return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
 	}
 	
 	// Create Interval Refill Instance
