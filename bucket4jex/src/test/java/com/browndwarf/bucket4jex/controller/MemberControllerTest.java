@@ -71,6 +71,9 @@ class MemberControllerTest {
 	@Order(1)
 	@DisplayName("Case 1. Use SimpleBucket. After N times API calls, and then N+1th call to empty bucket")
 	void testGetTotalMemberCount_WithSimpleBucket() {
+		
+		log.info("Test Case 1");
+		
 		// Given
 		when(memberService.getAllFriendsCount()).thenReturn(FAKE_MEMBER_COUNT);
 		
@@ -100,6 +103,9 @@ class MemberControllerTest {
 	@Order(2)
 	@DisplayName("Case 2. Use SimpleBucket. After N times API calls, and then N+1th call to refilled bucket")
 	void testGetTotalMemberCount_WithRefilledSimpleBucket() {
+		
+		log.info("Test Case 2");
+		
 		// Given
 		when(memberService.getAllFriendsCount()).thenReturn(FAKE_MEMBER_COUNT);
 		
@@ -125,6 +131,9 @@ class MemberControllerTest {
 	@Order(3)
 	@DisplayName("Case 3. Use Complex Bucket which refill token greedly.")
 	void testGetMemberListByName_WithComplexBucket_RefillGrdeedly() {
+		
+		log.info("Test Case 3");		
+		
 		// Given
 		when(memberService.getFriendInfoListByName(COMMON_NAME)).thenReturn(testMemberList);
 		String	targetURL = new StringBuilder("/member/name/").append(COMMON_NAME).toString();
@@ -132,7 +141,7 @@ class MemberControllerTest {
 		// When & Then		
 		try {
 			
-			log.info("--- Call API with Complex bucket - Refilling Bandwidth Greedly");
+			log.info("--- Call API with Complex bucket - refill a token gradually");
 			for(int i=0;i < MAX_BANDWIDTH;i++) {
 				mockMvc.perform(get(targetURL))		
 				.andExpect(status().isOk());
@@ -173,7 +182,7 @@ class MemberControllerTest {
 		// When & Then		
 		try {
 			
-			log.info("--- Call API with Complex bucket - Refilling Bandwidth Intervally");
+			log.info("--- Call API with Complex bucket - Refilling a token at regular intervals");
 			for(int i=0;i < MAX_BANDWIDTH;i++) {
 				mockMvc.perform(get(targetURL))		
 				.andExpect(status().isOk());
